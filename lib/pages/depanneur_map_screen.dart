@@ -1,4 +1,5 @@
 import 'package:depanvite/theme/app_theme.dart';
+import 'package:depanvite/widgets/depanneur_found_dialog.dart';
 import 'package:depanvite/widgets/depanneur_request_dialog.dart';
 import 'package:depanvite/widgets/header.dart';
 import 'package:flutter/material.dart';
@@ -89,6 +90,34 @@ class _DepanneurMapPageState extends State<DepanneurMapPage> {
     },
   );
 }
+
+void _showDepanneurFoundDialog() {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isDismissible: true,
+    builder: (BuildContext context) {
+      return DepanneurFoundDialog(
+        depanneurName: "Asbar Ahmed",
+        rating: 4.8,
+        vehicleType: "White Ford Tow Truck",
+        matricule: "ZZARM7",
+        phoneNumber: "0558872069",
+        distanceText: "1km loin de vous",
+        onCall: () {
+          // Handle phone call action
+          // You can use url_launcher package to make phone calls
+          // Example: launch('tel:0558872069');
+          Navigator.pop(context);
+        },
+        onClose: () {
+          Navigator.pop(context);
+        },
+      );
+    },
+  );
+}
+
 Future<String> _getAddressFromCoordinates(double lat, double lon) async {
   try {
     final url = Uri.parse(
@@ -561,10 +590,14 @@ Future<void> _getCurrentLocation() async {
     // Afficher la notification
     _showDepanneurSearchNotification();
 
-    // Après 2 secondes, afficher le dialog de confirmation
+    // Après 7 secondes, afficher le dialog de confirmation
    Future.delayed(const Duration(seconds: 7), () {
     _showRouteConfirmationDialog(_getShortName(result.displayName));
   });
+    // Après 14 secondes, afficher le dialog de dépanneur trouvé
+    Future.delayed(const Duration(seconds: 14), () {
+      _showDepanneurFoundDialog();
+    });
   }
 
   // Obtenir une icône appropriée selon le type de lieu
