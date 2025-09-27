@@ -99,9 +99,9 @@ class _SplashScreenState extends State<SplashScreen>
                       0,
                     ),
                     child: Image.asset(
-                      'assets/logo.png',
-                      width: 120,
-                      height: 120,
+                      'assets/towing-vehicle.png',
+                      width: 160,
+                      height: 160,
                     ),
                   );
                 },

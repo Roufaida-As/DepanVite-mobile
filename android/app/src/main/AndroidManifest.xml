@@ -8,7 +8,7 @@
         android:maxSdkVersion="32" />
     
     <application
-        android:label="depanvite"
+        android:label="DepanVite"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -49,5 +49,9 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <intent>
+    <action android:name="android.intent.action.DIAL" />
+    <data android:scheme="tel" />
+  </intent>
     </queries>
 </manifest>

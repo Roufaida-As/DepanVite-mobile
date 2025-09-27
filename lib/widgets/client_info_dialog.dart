@@ -2,29 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:depanvite/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class DepanneurFoundDialog extends StatelessWidget {
-  final String depanneurName;
-  final double rating;
-  final String vehicleType;
-  final String matricule;
+class ClientInfoDialog extends StatelessWidget {
+  final String clientName;
   final String phoneNumber;
-  final String distanceText;
-  final VoidCallback onClose;
+  final String position;
+  final String destination;
+  final String distance;
+  final Map<String, dynamic> vehicleInfo;
 
-  const DepanneurFoundDialog({
+  const ClientInfoDialog({
     super.key,
-    required this.depanneurName,
-    required this.rating,
-    required this.vehicleType,
-    required this.matricule,
+    required this.clientName,
     required this.phoneNumber,
-    required this.distanceText,
-    required this.onClose,
+    required this.position,
+    required this.destination,
+    required this.distance,
+    required this.vehicleInfo, 
   });
 
   // Method to make phone call
   Future<void> _makePhoneCall(BuildContext context) async {
-    // Remove any spaces or special characters from phone number
     final cleanedPhoneNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
     final Uri phoneUri = Uri(scheme: 'tel', path: cleanedPhoneNumber);
 
@@ -32,7 +29,6 @@ class DepanneurFoundDialog extends StatelessWidget {
       if (await canLaunchUrl(phoneUri)) {
         await launchUrl(phoneUri);
       } else {
-        // Show error if phone call cannot be made
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -44,7 +40,6 @@ class DepanneurFoundDialog extends StatelessWidget {
         }
       }
     } catch (e) {
-      // Handle any errors
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -71,21 +66,20 @@ class DepanneurFoundDialog extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Header avec message de succès et distance
+          // Header with success message and distance
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              const Expanded(
                 child: Text(
-                  "Dépanneur Trouvé parmi les dépanneurs partenaires de AXA !",
-                  style: const TextStyle(
-                    fontSize: 13,
+                  "Demande Acceptée !",
+                  style: TextStyle(
+                    fontSize: 18,
                     color: AppTheme.black,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              // Distance badge
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -96,7 +90,7 @@ class DepanneurFoundDialog extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  distanceText,
+                  distance,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 14,
@@ -107,14 +101,14 @@ class DepanneurFoundDialog extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 24),
 
           Divider(color: AppTheme.grey2, height: 2),
-          const SizedBox(height: 40),
-          // Profile section
+          const SizedBox(height: 24),
+
+          // Client profile section
           Row(
             children: [
-              // Avatar
               Container(
                 width: 60,
                 height: 60,
@@ -136,13 +130,12 @@ class DepanneurFoundDialog extends StatelessWidget {
 
               const SizedBox(width: 16),
 
-              // Name and rating
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      depanneurName,
+                      clientName,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -150,23 +143,12 @@ class DepanneurFoundDialog extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.star,
-                          color: AppTheme.yellow,
-                          size: 18,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          rating.toString(),
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: AppTheme.black,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      phoneNumber,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
                     ),
                   ],
                 ),
@@ -174,14 +156,112 @@ class DepanneurFoundDialog extends StatelessWidget {
             ],
           ),
 
-          const SizedBox(height: 40),
+          const SizedBox(height: 24),
+
+          // Location information
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.grey2.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.blue,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Position',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.black,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            position,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.red,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Destination',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppTheme.black,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            destination,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
 
           // Vehicle information
           Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildInfoRow("Matricule", matricule),
+              const Text(
+                "Informations du véhicule",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.black,
+                ),
+              ),
               const SizedBox(height: 12),
-              _buildInfoRow("Type de véhicule", vehicleType),
+              _buildInfoRow("Immatriculation", vehicleInfo['immatriculation']),
+              const SizedBox(height: 8),
+              _buildInfoRow("Marque", vehicleInfo['marque']),
+              const SizedBox(height: 8),
+              _buildInfoRow("Modèle", vehicleInfo['modele']),
+              const SizedBox(height: 8),
+              _buildInfoRow("Type", vehicleInfo['type']),
             ],
           ),
 
@@ -223,6 +303,30 @@ class DepanneurFoundDialog extends StatelessWidget {
             ),
           ),
 
+          const SizedBox(height: 16),
+
+          // Close button
+          GestureDetector(
+            onTap: () => Navigator.of(context).pop(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              decoration: BoxDecoration(
+                color: AppTheme.yellow,
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: const Center(
+                child: Text(
+                  "Fermer",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+
           const SizedBox(height: 8),
         ],
       ),
@@ -236,7 +340,7 @@ class DepanneurFoundDialog extends StatelessWidget {
         Text(
           "$label :",
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             color: Colors.grey,
             fontWeight: FontWeight.w500,
           ),
@@ -244,7 +348,7 @@ class DepanneurFoundDialog extends StatelessWidget {
         Text(
           value,
           style: const TextStyle(
-            fontSize: 15,
+            fontSize: 14,
             color: AppTheme.black,
             fontWeight: FontWeight.w600,
           ),

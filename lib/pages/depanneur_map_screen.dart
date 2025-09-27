@@ -1,3 +1,4 @@
+import 'package:depanvite/pages/auth_screen.dart';
 import 'package:depanvite/theme/app_theme.dart';
 import 'package:depanvite/widgets/depanneur_found_dialog.dart';
 import 'package:depanvite/widgets/depanneur_request_dialog.dart';
@@ -104,12 +105,6 @@ void _showDepanneurFoundDialog() {
         matricule: "ZZARM7",
         phoneNumber: "0558872069",
         distanceText: "1km loin de vous",
-        onCall: () {
-          // Handle phone call action
-          // You can use url_launcher package to make phone calls
-          // Example: launch('tel:0558872069');
-          Navigator.pop(context);
-        },
         onClose: () {
           Navigator.pop(context);
         },
@@ -762,14 +757,39 @@ Future<void> _getCurrentLocation() async {
               children: [
                 const Header(),
                 Row(
-                  children: [
+                    children: [
                     IconButton(
                       icon: const Icon(Icons.notifications_outlined),
                       onPressed: () {},
                     ),
                     IconButton(
-                      icon: const Icon(Icons.person),
-                      onPressed: () {},
+                      icon: const Icon(Icons.logout),
+                      onPressed: () {
+                      // Show confirmation dialog
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text("Se déconnecter"),
+                          content: const Text("Êtes-vous sûr de vouloir vous déconnecter?"),
+                          actions: [
+                          TextButton(
+                            child: const Text("Annuler"),
+                            onPressed: () {
+                            Navigator.of(context).pop();
+                            },
+                          ),
+                          TextButton(
+                            child: const Text("Déconnecter"),
+                            onPressed: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => const AuthScreen()));
+                            },
+                          ),
+                          ],
+                        );
+                        },
+                      );
+                      },
                     ),
                   ],
                 ),

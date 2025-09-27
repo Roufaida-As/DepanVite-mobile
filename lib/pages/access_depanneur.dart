@@ -1,4 +1,4 @@
-import 'package:depanvite/pages/depanneur_map_screen.dart';
+import 'package:depanvite/pages/demandes_depanneur_screen.dart';
 import 'package:depanvite/theme/app_theme.dart';
 import 'package:depanvite/widgets/header.dart';
 import 'package:flutter/material.dart';
@@ -6,27 +6,29 @@ import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-class DemandeClient extends StatefulWidget {
-  const DemandeClient({super.key});
+class AccesDepanneur extends StatefulWidget {
+  const AccesDepanneur({super.key});
 
   @override
-  State<DemandeClient> createState() => _DemandeClientState();
+  State<AccesDepanneur> createState() => _AccesDepanneurState();
 }
 
-class _DemandeClientState extends State<DemandeClient> {
+class _AccesDepanneurState extends State<AccesDepanneur> {
   final _formKey = GlobalKey<FormState>();
 
   // Controllers pour les champs de texte
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _prenomController = TextEditingController();
   final TextEditingController _telephoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _immatriculationController =
       TextEditingController();
-  final TextEditingController _vinController = TextEditingController();
+  final TextEditingController _permisController = TextEditingController();
   final TextEditingController _modeleController = TextEditingController();
+  final TextEditingController _capaciteController = TextEditingController();
 
   String? _selectedMarque;
-  String? _selectedTypeVehicule;
+  String? _selectedSpecialisation;
   String _localisationActuelle = "Localisation en cours...";
   bool _isLocationLoading = false;
   Position? _currentPosition;
@@ -42,15 +44,18 @@ class _DemandeClientState extends State<DemandeClient> {
     'Audi',
     'Nissan',
     'Ford',
+    'Iveco',
+    'MAN',
+    'Scania',
+    'Volvo',
   ];
 
-  final List<String> _typesVehicule = [
-    'Voiture',
-    'Moto',
-    'Camion',
-    'Fourgon',
-    'SUV',
-    'Utilitaire',
+  final List<String> _specialisations = [
+    'Voitures légères',
+    'Motos',
+    'Poids lourds',
+    'Véhicules utilitaires',
+    'Tous types de véhicules',
   ];
 
   @override
@@ -64,9 +69,11 @@ class _DemandeClientState extends State<DemandeClient> {
     _nomController.dispose();
     _prenomController.dispose();
     _telephoneController.dispose();
+    _emailController.dispose();
     _immatriculationController.dispose();
-    _vinController.dispose();
+    _permisController.dispose();
     _modeleController.dispose();
+    _capaciteController.dispose();
     super.dispose();
   }
 
@@ -82,7 +89,6 @@ class _DemandeClientState extends State<DemandeClient> {
     }
 
     if (permission == LocationPermission.deniedForever) {
-      // Ouvrir les paramètres de l'application
       await openAppSettings();
       return false;
     }
@@ -98,7 +104,6 @@ class _DemandeClientState extends State<DemandeClient> {
     });
 
     try {
-      // Vérifier si le service de localisation est activé
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
@@ -109,7 +114,6 @@ class _DemandeClientState extends State<DemandeClient> {
         return;
       }
 
-      // Vérifier les permissions
       bool hasPermission = await _checkLocationPermission();
       if (!hasPermission) {
         setState(() {
@@ -119,7 +123,6 @@ class _DemandeClientState extends State<DemandeClient> {
         return;
       }
 
-      // Obtenir la position actuelle
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: Duration(seconds: 10),
@@ -127,7 +130,6 @@ class _DemandeClientState extends State<DemandeClient> {
 
       _currentPosition = position;
 
-      // Convertir les coordonnées en adresse
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
@@ -175,7 +177,6 @@ class _DemandeClientState extends State<DemandeClient> {
     }
   }
 
-  // Dialog pour informer l'utilisateur d'activer les services de localisation
   void _showLocationServiceDialog() {
     showDialog(
       context: context,
@@ -210,6 +211,7 @@ class _DemandeClientState extends State<DemandeClient> {
     required TextEditingController controller,
     String? hintText,
     TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,6 +234,7 @@ class _DemandeClientState extends State<DemandeClient> {
           child: TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            validator: validator,
             decoration: InputDecoration(
               hintText: hintText,
               hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
@@ -277,7 +280,7 @@ class _DemandeClientState extends State<DemandeClient> {
             value: value,
             decoration: InputDecoration(
               hintText: hintText,
-              hintStyle: TextStyle(color: Colors.grey, fontSize: 14),
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 20,
@@ -302,7 +305,7 @@ class _DemandeClientState extends State<DemandeClient> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          "Localisation actuelle",
+          "Adresse complète",
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
@@ -373,7 +376,6 @@ class _DemandeClientState extends State<DemandeClient> {
             ],
           ),
         ),
-        // Afficher les coordonnées si disponibles (optionnel, pour le debug)
         if (_currentPosition != null)
           Padding(
             padding: const EdgeInsets.only(top: 8),
@@ -383,7 +385,73 @@ class _DemandeClientState extends State<DemandeClient> {
               style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
             ),
           ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  Widget _buildCapacityField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          "Capacité de remorquage",
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: AppTheme.black,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(color: AppTheme.yellow, width: 2),
+            color: Colors.white,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _capaciteController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    hintText: "Entrez votre capacité en tonne",
+                    hintStyle: TextStyle(
+                      color: Colors.grey.shade400,
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
+                  ),
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppTheme.yellow,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  "t",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -399,22 +467,20 @@ class _DemandeClientState extends State<DemandeClient> {
             children: [
               const Header(),
 
-              // Contenu scrollable
               Expanded(
                 child: SingleChildScrollView(
                   child: Form(
                     key: _formKey,
                     child: Column(
                       children: [
-                        // Titre section informations personnelles
                         const SizedBox(height: 20),
                         const Text(
                           "Informations personnelles",
                           style: TextStyle(fontSize: 18, color: AppTheme.black),
                           textAlign: TextAlign.center,
                         ),
+                        const SizedBox(height: 20),
 
-                        // Champs informations personnelles
                         _buildTextField(
                           label: "Nom",
                           controller: _nomController,
@@ -433,31 +499,43 @@ class _DemandeClientState extends State<DemandeClient> {
                           hintText: "Entrez votre numéro de téléphone",
                           keyboardType: TextInputType.phone,
                         ),
-                        const SizedBox(height: 20),
 
-                        // Titre section informations véhicule
+                        _buildLocationField(),
+
+                        const SizedBox(height: 20),
                         const Text(
-                          "Informations de votre voiture",
+                          "Informations de votre Voiture",
                           style: TextStyle(fontSize: 18, color: AppTheme.black),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
 
-                        // Champs informations véhicule
                         _buildTextField(
-                          label: "Numéro d'immatriculation",
+                          label: "Plaque d'Immatriculation de la dépanneuse",
                           controller: _immatriculationController,
-                          hintText: "Entrez votre numéro d'immatriculation",
+                          hintText: "Entrez votre plaque d'immatriculation",
                         ),
 
                         _buildTextField(
-                          label: "Numéro de Châssis (VIN)",
-                          controller: _vinController,
-                          hintText: "Entrez votre numéro de châssis",
+                          label: "Numéro de Permis de Conduire",
+                          controller: _permisController,
+                          hintText: "Entrez votre numéro de Permis",
                         ),
 
                         _buildDropdown(
-                          label: "Marque du Véhicule",
+                          label: "Spécialisations",
+                          value: _selectedSpecialisation,
+                          items: _specialisations,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedSpecialisation = newValue;
+                            });
+                          },
+                          hintText: "Choisissez votre spécialisation",
+                        ),
+
+                        _buildDropdown(
+                          label: "Marque de la dépanneuse",
                           value: _selectedMarque,
                           items: _marques,
                           onChanged: (String? newValue) {
@@ -469,27 +547,15 @@ class _DemandeClientState extends State<DemandeClient> {
                         ),
 
                         _buildTextField(
-                          label: "Modèle du Véhicule",
+                          label: "Modèle de la dépanneuse",
                           controller: _modeleController,
                           hintText: "Entrez votre modèle",
                         ),
 
-                        _buildDropdown(
-                          label: "Type de Véhicule",
-                          value: _selectedTypeVehicule,
-                          items: _typesVehicule,
-                          onChanged: (String? newValue) {
-                            setState(() {
-                              _selectedTypeVehicule = newValue;
-                            });
-                          },
-                          hintText: "Choisissez votre type de véhicule",
-                        ),
+                        _buildCapacityField(),
 
-                        // Localisation
-                        _buildLocationField(),
+                        const SizedBox(height: 24),
 
-                        // Boutons
                         Row(
                           children: [
                             Expanded(
@@ -529,13 +595,9 @@ class _DemandeClientState extends State<DemandeClient> {
                                 child: TextButton(
                                   onPressed: () {
                                     if (_formKey.currentState!.validate()) {
-                                      // Simulation vérification
-                                      bool isAssure =
-                                          true; // mets false pour tester l'autre cas
-                                      _showResultDialog(isAssure);
+                                      _showSuccessDialog();
                                     }
                                   },
-
                                   child: const Text(
                                     "Suivant",
                                     style: TextStyle(
@@ -561,7 +623,7 @@ class _DemandeClientState extends State<DemandeClient> {
     );
   }
 
-  void _showResultDialog(bool isAssure) {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -574,30 +636,18 @@ class _DemandeClientState extends State<DemandeClient> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  isAssure ? Icons.check_circle : Icons.error,
-                  color: isAssure ? Colors.green : Colors.red,
-                  size: 50,
-                ),
+                const Icon(Icons.check_circle, color: Colors.green, size: 50),
                 const SizedBox(height: 16),
-                Text(
-                  isAssure
-                      ? "Félicitations 🎉 ! Vous êtes couvert par l’assurance AXA. et vous avez l'option de dépannage chez eux"
-                      : "Désolé, aucune couverture trouvée pour votre véhicule.",
+                const Text(
+                  "Inscription réussie ! 🎉",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
-                Text(
-                  isAssure
-                      ? "Votre demande de dépannage sera traitée auprès des dépanneurs partenaires AXA.\n\n"
-                            "Si aucun n’est disponible, un dépanneur indépendant sera proposé automatiquement."
-                      : "Mais ne vous inquiétez pas ! \nDes dépanneurs indépendants sont disponibles à proximité pour vous aider immédiatement.",
+                const Text(
+                  "Votre demande d'inscription en tant que dépanneur a été envoyée avec succès.\n\nVous recevrez une confirmation par email une fois votre compte validé.",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 14),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton(
@@ -608,7 +658,12 @@ class _DemandeClientState extends State<DemandeClient> {
                     ),
                   ),
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const DepanneurMapPage()));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const DemandesDepanneurPage(),
+                      ),
+                    );
                   },
                   child: const Text(
                     "OK",

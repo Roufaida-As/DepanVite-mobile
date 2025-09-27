@@ -8,9 +8,12 @@ class Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Image.asset('assets/logo.png', width: 40, height: 40),
-        const SizedBox(width: 8),
-        SvgPicture.asset('assets/app-name.svg', height: 30),
+        Image.asset('assets/headerlogo.png'),
+        // const SizedBox(width: 8),
+        // Align(
+        //   alignment: Alignment.centerLeft,
+        //   child: SvgPicture.asset('assets/app-name.svg', height: 30),
+        // ),
       ],
     );
   }
